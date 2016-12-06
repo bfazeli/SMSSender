@@ -10,7 +10,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -92,6 +94,15 @@ public class MessageActivity extends AppCompatActivity {
 
     public void deleteContact(View view) {
         // TODO: Delete the selected contact from the database and remove the contact from the contactsAdapter.
+        if (view instanceof LinearLayout)
+        {
+            Contact selectedContact = (Contact) view.getTag();
+
+            db.deleteContact(selectedContact.getId());
+            contactsAdapter.remove(selectedContact);
+
+            Toast.makeText(this, "Contact Deleted: " + selectedContact.getName(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void sendTextMessage(View view) {

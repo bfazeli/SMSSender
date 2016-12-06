@@ -1,6 +1,11 @@
 package edu.orangecoastcollege.cs273.smssender;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -10,6 +15,9 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 public class MessageActivity extends AppCompatActivity {
+
+    private static final int REQUEST_CODE_ADD_CONTACT = 100;
+    private static final int REQUEST_CODE_SEND_SMS = 101;
 
     private ArrayList<Contact> contactsList;
     private ContactsAdapter contactsAdapter;
@@ -36,7 +44,46 @@ public class MessageActivity extends AppCompatActivity {
 
     public void addContacts(View view) {
         // TODO: Start an activity for intent to pick a contact from the device.
+        Intent contactIntent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
+        startActivityForResult(contactIntent, REQUEST_CODE_ADD_CONTACT);
 
+
+
+    }
+
+    /**
+     * Dispatch incoming result to the correct fragment.
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_CODE_ADD_CONTACT && resultCode == Activity.RESULT_OK)
+        {
+            Uri contactData = data.getData();
+            Cursor cursor = getContentResolver().query(contactData, null, null, null, null);
+
+            if (cursor.moveToFirst())
+            {
+                String name = cursor.getString(
+                        cursor.getColumnIndexOrThrow(
+                                ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+
+                String phone = cursor.getString(
+                        cursor.getColumnIndexOrThrow(
+                                ContactsContract.CommonDataKinds.Phone.NUMBER));
+
+                Contact newContact = new Contact(name, phone);
+                db.addContact(newContact);
+                contactsAdapter.add(newContact);
+            }
+
+            cursor.close();
+        }
     }
 
     // TODO: Overload (create) the onActivityResult() method, get the contactData,
